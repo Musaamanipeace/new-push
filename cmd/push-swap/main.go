@@ -34,7 +34,7 @@ func main() {
 		return
 	}
 
-	// Structural Index Mapping (Keep original values intact in StackA)
+	// Structural Index Mapping
 	exercise_SortedCopy := append(shared.ExerciseStack{}, exercise_StackA...)
 	sort.Ints(exercise_SortedCopy)
 
@@ -44,37 +44,36 @@ func main() {
 	}
 
 	// ---------------------------------------------------------
-	// PURE NON-COMPARATIVE SMALL PATH (For <= 6 elements)
+	// OPTIMIZED CHUNK SORT PATH (For <= 6 elements)
 	// ---------------------------------------------------------
 	if len(exercise_StackA) <= 6 {
-		totalElements := len(exercise_StackA)
-		
-		for target := 0; target < totalElements; target++ {
-			targetIdx := -1
-			for idx, val := range exercise_StackA {
-				// Match against mapped index values instead of modified array elements
-				if exercise_MapPositions[val] == target {
-					targetIdx = idx
-					break
-				}
-			}
+		chunkSize := 3
+		currentMaxIdx := chunkSize - 1
 
-			if targetIdx <= len(exercise_StackA)/2 {
-				for i := 0; i < targetIdx; i++ {
-					shared.Exercise_Ra(&exercise_StackA)
-					fmt.Println("ra")
+		// Stop looping immediately once the chunk is filled to prevent extra ra moves
+		for len(exercise_StackB) < chunkSize && len(exercise_StackA) > 0 {
+			targetPos := exercise_MapPositions[exercise_StackA[0]]
+			if targetPos <= currentMaxIdx {
+				shared.Exercise_Pb(&exercise_StackA, &exercise_StackB)
+				fmt.Println("pb")
+				
+				if len(exercise_StackB) > 1 && exercise_MapPositions[exercise_StackB[0]] < exercise_MapPositions[exercise_StackB[1]] {
+					shared.Exercise_Sb(&exercise_StackB)
+					fmt.Println("sb")
 				}
 			} else {
-				for i := 0; i < len(exercise_StackA)-targetIdx; i++ {
-					shared.Exercise_Rra(&exercise_StackA)
-					fmt.Println("rra")
-				}
+				shared.Exercise_Ra(&exercise_StackA)
+				fmt.Println("ra")
 			}
-
-			shared.Exercise_Pb(&exercise_StackA, &exercise_StackB)
-			fmt.Println("pb")
 		}
 
+		// Sort the remaining chunk items in Stack A
+		if len(exercise_StackA) >= 2 && exercise_MapPositions[exercise_StackA[0]] > exercise_MapPositions[exercise_StackA[1]] {
+			shared.Exercise_Sa(&exercise_StackA)
+			fmt.Println("sa")
+		}
+
+		// Merge the chunks back together cleanly
 		for len(exercise_StackB) > 0 {
 			shared.Exercise_Pa(&exercise_StackA, &exercise_StackB)
 			fmt.Println("pa")
@@ -97,7 +96,6 @@ func main() {
 		}
 
 		for i := 0; i < exercise_TotalSize; i++ {
-			// Pull structural bit representations from the original map values
 			normalizedVal := exercise_MapPositions[exercise_StackA[0]]
 			if ((normalizedVal >> bit) & 1) == 1 {
 				shared.Exercise_Ra(&exercise_StackA)
