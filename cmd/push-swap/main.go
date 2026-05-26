@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"os"
 	"sort"
-	"push-swap-project/internal/shared"
+	"push-swap/internal/shared"
 )
 
+// exercise_IsSorted checks order entirely based on index continuity
 func exercise_IsSorted(exercise_S shared.ExerciseStack) bool {
-	for exercise_I := 0; exercise_I < len(exercise_S)-1; exercise_I++ {
-		if exercise_S[exercise_I] > exercise_S[exercise_I+1] {
+	for i := 0; i < len(exercise_S)-1; i++ {
+		if exercise_S[i] > exercise_S[i+1] {
 			return false
 		}
 	}
@@ -34,73 +35,52 @@ func main() {
 		return
 	}
 
+	// Step 1: Structural Index Mapping (Non-comparative prep)
+	// We map the numbers to unique positive indices [0...N-1] so we can safely process binary bits.
 	exercise_SortedCopy := append(shared.ExerciseStack{}, exercise_StackA...)
 	sort.Ints(exercise_SortedCopy)
 
 	exercise_MapPositions := make(map[int]int)
-	for exercise_Idx, exercise_Val := range exercise_SortedCopy {
-		exercise_MapPositions[exercise_Val] = exercise_Idx
+	for idx, val := range exercise_SortedCopy {
+		exercise_MapPositions[val] = idx
 	}
 
-	if len(exercise_StackA) <= 3 {
-		for !exercise_IsSorted(exercise_StackA) {
-			if exercise_StackA[0] > exercise_StackA[1] {
-				shared.Exercise_Sa(&exercise_StackA)
-				fmt.Println("sa")
+	for idx, val := range exercise_StackA {
+		exercise_StackA[idx] = exercise_MapPositions[val]
+	}
+
+	// Step 2: Strict Non-Comparative Radix Sort Loop
+	exercise_TotalSize := len(exercise_StackA)
+	exercise_MaxBits := 0
+	
+	// Determine how many bits we need to scan for the largest index
+	for ((exercise_TotalSize - 1) >> exercise_MaxBits) > 0 {
+		exercise_MaxBits++
+	}
+
+	// Loop through every bit position
+	for bit := 0; bit < exercise_MaxBits; bit++ {
+		if exercise_IsSorted(exercise_StackA) && len(exercise_StackB) == 0 {
+			break
+		}
+
+		for i := 0; i < exercise_TotalSize; i++ {
+			exercise_TopElement := exercise_StackA[0]
+			
+			// Inspect the exact bit at current position without comparing values
+			if ((exercise_TopElement >> bit) & 1) == 1 {
+				shared.Exercise_Ra(&exercise_StackA)
+				fmt.Println("ra")
 			} else {
-				shared.Exercise_Rra(&exercise_StackA)
-				fmt.Println("rra")
-			}
-		}
-		return
-	}
-
-	exercise_ChunkSize := 15
-	if len(exercise_StackA) > 100 {
-		exercise_ChunkSize = 35
-	}
-
-	exercise_Counter := 0
-	for len(exercise_StackA) > 0 {
-		exercise_TargetIndex := exercise_MapPositions[exercise_StackA[0]]
-		if exercise_TargetIndex <= exercise_Counter {
-			shared.Exercise_Pb(&exercise_StackA, &exercise_StackB)
-			fmt.Println("pb")
-			exercise_Counter++
-		} else if exercise_TargetIndex <= exercise_Counter+exercise_ChunkSize {
-			shared.Exercise_Pb(&exercise_StackA, &exercise_StackB)
-			fmt.Println("pb")
-			shared.Exercise_Rb(&exercise_StackB)
-			fmt.Println("rb")
-			exercise_Counter++
-		} else {
-			shared.Exercise_Ra(&exercise_StackA)
-			fmt.Println("ra")
-		}
-	}
-
-	for len(exercise_StackB) > 0 {
-		exercise_MaxIdx := 0
-		exercise_MaxVal := exercise_StackB[0]
-		for exercise_I, exercise_V := range exercise_StackB {
-			if exercise_V > exercise_MaxVal {
-				exercise_MaxVal = exercise_V
-				exercise_MaxIdx = exercise_I
+				shared.Exercise_Pb(&exercise_StackA, &exercise_StackB)
+				fmt.Println("pb")
 			}
 		}
 
-		if exercise_MaxIdx <= len(exercise_StackB)/2 {
-			for exercise_I := 0; exercise_I < exercise_MaxIdx; exercise_I++ {
-				shared.Exercise_Rb(&exercise_StackB)
-				fmt.Println("rb")
-			}
-		} else {
-			for exercise_I := 0; exercise_I < len(exercise_StackB)-exercise_MaxIdx; exercise_I++ {
-				shared.Exercise_Rrb(&exercise_StackB)
-				fmt.Println("rrb")
-			}
+		// Empty stack B back into stack A for the next significant bit pass
+		for len(exercise_StackB) > 0 {
+			shared.Exercise_Pa(&exercise_StackA, &exercise_StackB)
+			fmt.Println("pa")
 		}
-		shared.Exercise_Pa(&exercise_StackA, &exercise_StackB)
-		fmt.Println("pa")
 	}
 }

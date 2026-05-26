@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"push-swap-project/internal/shared"
+	"push-swap/internal/shared"
 )
 
 func main() {
@@ -33,19 +33,29 @@ func main() {
 		case "pb": shared.Exercise_Pb(&exercise_StackA, &exercise_StackB)
 		case "sa": shared.Exercise_Sa(&exercise_StackA)
 		case "sb": shared.Exercise_Sb(&exercise_StackB)
+		case "ss":
+			shared.Exercise_Sa(&exercise_StackA)
+			shared.Exercise_Sb(&exercise_StackB)
 		case "ra": shared.Exercise_Ra(&exercise_StackA)
 		case "rb": shared.Exercise_Rb(&exercise_StackB)
+		case "rr":
+			shared.Exercise_Ra(&exercise_StackA)
+			shared.Exercise_Rb(&exercise_StackB)
 		case "rra": shared.Exercise_Rra(&exercise_StackA)
 		case "rrb": shared.Exercise_Rrb(&exercise_StackB)
+		case "rrr":
+			shared.Exercise_Rra(&exercise_StackA)
+			shared.Exercise_Rrb(&exercise_StackB)
 		default:
 			shared.Exercise_PrintError()
 			os.Exit(1)
 		}
 	}
 
+	// Verify stack state
 	exercise_IsSorted := true
-	for exercise_I := 0; exercise_I < len(exercise_StackA)-1; exercise_I++ {
-		if exercise_StackA[exercise_I] > exercise_StackA[exercise_I+1] {
+	for i := 0; i < len(exercise_StackA)-1; i++ {
+		if exercise_StackA[i] > exercise_StackA[i+1] {
 			exercise_IsSorted = false
 			break
 		}
