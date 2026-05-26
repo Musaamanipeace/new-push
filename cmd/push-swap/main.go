@@ -34,7 +34,7 @@ func main() {
 		return
 	}
 
-	// Create a structural map to find positions without altering the original values
+	// Structural Index Mapping (Transforms raw numbers into values 0 to N-1)
 	exercise_SortedCopy := append(shared.ExerciseStack{}, exercise_StackA...)
 	sort.Ints(exercise_SortedCopy)
 
@@ -43,23 +43,28 @@ func main() {
 		exercise_MapPositions[val] = idx
 	}
 
+	for idx, val := range exercise_StackA {
+		exercise_StackA[idx] = exercise_MapPositions[val]
+	}
+
 	// ---------------------------------------------------------
 	// PURE NON-COMPARATIVE SMALL PATH (For <= 6 elements)
 	// ---------------------------------------------------------
 	if len(exercise_StackA) <= 6 {
 		totalElements := len(exercise_StackA)
 		
-		// Sort by pulling elements out sequentially based on their ranked position
+		// Sort by pulling elements out sequentially based on their absolute index identity
 		for target := 0; target < totalElements; target++ {
+			// Find where our target item is sitting structurally in stack A
 			targetIdx := -1
 			for idx, val := range exercise_StackA {
-				if exercise_MapPositions[val] == target {
+				if val == target {
 					targetIdx = idx
 					break
 				}
 			}
 
-			// Bring the target element to the top of Stack A
+			// Bring it to the top using the shortest rotational path
 			if targetIdx <= len(exercise_StackA)/2 {
 				for i := 0; i < targetIdx; i++ {
 					shared.Exercise_Ra(&exercise_StackA)
@@ -72,12 +77,12 @@ func main() {
 				}
 			}
 
-			// Push it to B
+			// Push to B once it reaches the top
 			shared.Exercise_Pb(&exercise_StackA, &exercise_StackB)
 			fmt.Println("pb")
 		}
 
-		// Push back to A, resulting in perfect ascending order
+		// Stack B is now in perfect descending order; push everything back to A
 		for len(exercise_StackB) > 0 {
 			shared.Exercise_Pa(&exercise_StackA, &exercise_StackB)
 			fmt.Println("pa")
@@ -100,9 +105,8 @@ func main() {
 		}
 
 		for i := 0; i < exercise_TotalSize; i++ {
-			// Read the bit position of the normalized index, not the raw value
-			normalizedVal := exercise_MapPositions[exercise_StackA[0]]
-			if ((normalizedVal >> bit) & 1) == 1 {
+			exercise_TopElement := exercise_StackA[0]
+			if ((exercise_TopElement >> bit) & 1) == 1 {
 				shared.Exercise_Ra(&exercise_StackA)
 				fmt.Println("ra")
 			} else {
